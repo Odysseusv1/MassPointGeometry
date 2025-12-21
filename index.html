@@ -1,0 +1,297 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mass Point Geometry</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        text-align: center;
+        padding: 20px;
+    }
+
+    button {
+        padding: 10px 18px;
+        margin: 8px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    canvas {
+        background: white;
+        border: 2px solid #333;
+        margin-top: 20px;
+    }
+
+    .page {
+        display: none;
+        max-width: 900px;
+        margin: auto;
+    }
+
+    .active {
+        display: block;
+    }
+
+    .info {
+        margin-top: 20px;
+        font-size: 17px;
+    }
+
+    h2 {
+        margin-top: 30px;
+        color: #2c3e50;
+    }
+
+    p, li {
+        text-align: left;
+        line-height: 1.6;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Mass Point Geometry</h1>
+
+<button onclick="showPage('line')">Line</button>
+<button onclick="showPage('triangle')">Triangle</button>
+<button onclick="showPage('explain')">Explanation</button>
+
+<!-- ================= LINE SIMULATION ================= -->
+<div id="line" class="page active">
+<h2>Line (Segment) Mass Points</h2>
+<p>Drag point <b>D</b> along segment <b>BC</b>.</p>
+
+<canvas id="lineCanvas" width="600" height="200"></canvas>
+
+<div class="info">
+    <p>BD : DC = <span id="lineRatio"></span></p>
+    <p>Mass at B = <span id="lineMassB"></span></p>
+    <p>Mass at C = <span id="lineMassC"></span></p>
+    <p>Mass at D = <span id="lineMassD"></span></p>
+</div>
+</div>
+
+<!-- ================= TRIANGLE SIMULATION ================= -->
+<div id="triangle" class="page">
+<h2>Triangle with Multiple Cevians</h2>
+<p>Drag points <b>D</b>, <b>E</b>, and <b>F</b> along the sides.</p>
+
+<canvas id="triCanvas" width="600" height="420"></canvas>
+
+<div class="info">
+    <p>BD : DC = <span id="rBC"></span></p>
+    <p>AE : EC = <span id="rAC"></span></p>
+    <p>AF : FB = <span id="rAB"></span></p>
+    <p>Mass A = <span id="mA"></span></p>
+    <p>Mass B = <span id="mB"></span></p>
+    <p>Mass C = <span id="mC"></span></p>
+</div>
+</div>
+
+<!-- ================= EXPLANATION PAGE ================= -->
+<div id="explain" class="page">
+
+<h2>What Is Mass Point Geometry?</h2>
+<p>
+Mass point geometry is a problem-solving technique used to find ratios in geometric
+figures. Instead of using algebra or coordinates, we assign “masses” to points so
+that everything balances.
+</p>
+
+<h2>The Law of the Lever</h2>
+<p>
+The foundation of mass points comes from physics.
+If a point D lies on segment BC, then:
+</p>
+
+<p style="text-align:center;"><b>
+(Mass at B) × BD = (Mass at C) × DC
+</b></p>
+
+<p>
+This means the masses are inversely proportional to the lengths.
+If BD : DC = 2 : 3, then the mass at B is 3 and the mass at C is 2.
+</p>
+
+<h2>Why Mass Points Are Useful</h2>
+<ul>
+    <li>Finding ratios quickly</li>
+    <li>Proving concurrency of cevians</li>
+    <li>Avoiding complicated algebra</li>
+    <li>Solving contest problems efficiently</li>
+</ul>
+
+<h2>AMC 8 2019 – Problem 24 (Mass Points)</h2>
+<p>
+This problem involves a triangle with cevians dividing the sides into known ratios.
+The goal is to find another ratio created by their intersection.
+</p>
+
+<p><b>Step 1:</b> Assign masses to endpoints of each side so the given ratios are satisfied.</p>
+<p><b>Step 2:</b> When multiple ratios meet at a vertex, add the masses.</p>
+<p><b>Step 3:</b> Use the final masses to compute the unknown ratio.</p>
+
+<p>
+The entire problem reduces to simple arithmetic. This is why mass point geometry
+is such a powerful tool on AMC-style contests.
+</p>
+
+</div>
+
+<script>
+/* ================= PAGE SWITCH ================= */
+function showPage(id) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+/* ================= LINE SIM ================= */
+const lc = document.getElementById("lineCanvas");
+const lctx = lc.getContext("2d");
+
+const LB = { x: 100, y: 100 };
+const LC = { x: 500, y: 100 };
+let LD = { x: 300, y: 100 };
+let dragLine = false;
+
+function drawLineSim() {
+    lctx.clearRect(0,0,lc.width,lc.height);
+
+    drawSeg(LB,LC);
+    drawDot(LB,"B");
+    drawDot(LC,"C");
+    drawDot(LD,"D",true);
+
+    const BD = LD.x - LB.x;
+    const DC = LC.x - LD.x;
+    const g = gcd(BD,DC);
+
+    document.getElementById("lineRatio").textContent = `${BD/g} : ${DC/g}`;
+    document.getElementById("lineMassB").textContent = DC/g;
+    document.getElementById("lineMassC").textContent = BD/g;
+    document.getElementById("lineMassD").textContent = BD/g + DC/g;
+}
+
+lc.addEventListener("mousedown", e=>{
+    if(Math.abs(e.offsetX-LD.x)<10) dragLine=true;
+});
+lc.addEventListener("mousemove", e=>{
+    if(dragLine){
+        LD.x = Math.max(LB.x,Math.min(LC.x,e.offsetX));
+        drawLineSim();
+    }
+});
+lc.addEventListener("mouseup", ()=>dragLine=false);
+
+/* ================= TRIANGLE SIM ================= */
+const tc = document.getElementById("triCanvas");
+const tctx = tc.getContext("2d");
+
+const A = { x: 300, y: 60 };
+const B = { x: 120, y: 340 };
+const C = { x: 480, y: 340 };
+
+let D = { x: 300, y: 340 };
+let E = { x: 390, y: 200 };
+let F = { x: 210, y: 200 };
+let drag = null;
+
+function drawTri() {
+    tctx.clearRect(0,0,tc.width,tc.height);
+
+    drawSeg(A,B,tctx);
+    drawSeg(B,C,tctx);
+    drawSeg(C,A,tctx);
+
+    drawSeg(A,D,tctx,"#e74c3c");
+    drawSeg(B,E,tctx,"#27ae60");
+    drawSeg(C,F,tctx,"#8e44ad");
+
+    drawDot(A,"A",false,tctx);
+    drawDot(B,"B",false,tctx);
+    drawDot(C,"C",false,tctx);
+    drawDot(D,"D",true,tctx);
+    drawDot(E,"E",true,tctx);
+    drawDot(F,"F",true,tctx);
+
+    updateTriMasses();
+}
+
+function updateTriMasses() {
+    const BD = D.x - B.x;
+    const DC = C.x - D.x;
+    const gBC = gcd(BD,DC);
+
+    const AE = dist(A,E);
+    const EC = dist(E,C);
+    const gAC = gcd(Math.round(AE),Math.round(EC));
+
+    const AF = dist(A,F);
+    const FB = dist(F,B);
+    const gAB = gcd(Math.round(AF),Math.round(FB));
+
+    document.getElementById("rBC").textContent = `${BD/gBC}:${DC/gBC}`;
+    document.getElementById("rAC").textContent = `${AE/gAC}:${EC/gAC}`;
+    document.getElementById("rAB").textContent = `${AF/gAB}:${FB/gAB}`;
+
+    document.getElementById("mA").textContent = Math.round(EC/gAC + FB/gAB);
+    document.getElementById("mB").textContent = Math.round(DC/gBC + AF/gAB);
+    document.getElementById("mC").textContent = Math.round(BD/gBC + AE/gAC);
+}
+
+/* ================= HELPERS ================= */
+function drawSeg(p,q,ctx=lctx,color="black"){
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+    ctx.lineTo(q.x,q.y);
+    ctx.strokeStyle=color;
+    ctx.lineWidth=2;
+    ctx.stroke();
+}
+function drawDot(p,l,drag=false,ctx=lctx){
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,8,0,Math.PI*2);
+    ctx.fillStyle=drag?"#e74c3c":"#3498db";
+    ctx.fill();
+    ctx.fillStyle="black";
+    ctx.fillText(l,p.x-5,p.y-15);
+}
+function gcd(a,b){return b?gcd(b,a%b):Math.abs(a);}
+function dist(p,q){return Math.hypot(p.x-q.x,p.y-q.y);}
+
+/* ================= TRI DRAG ================= */
+tc.addEventListener("mousedown",e=>{
+    if(near(e,D)) drag="D";
+    else if(near(e,E)) drag="E";
+    else if(near(e,F)) drag="F";
+});
+tc.addEventListener("mousemove",e=>{
+    if(!drag) return;
+    if(drag==="D") D.x=clamp(e.offsetX,B.x,C.x);
+    if(drag==="E") project(A,C,E,e);
+    if(drag==="F") project(A,B,F,e);
+    drawTri();
+});
+tc.addEventListener("mouseup",()=>drag=null);
+tc.addEventListener("mouseleave",()=>drag=null);
+
+function near(e,p){return Math.hypot(e.offsetX-p.x,e.offsetY-p.y)<10;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
+function project(P,Q,R,e){
+    const t=((e.offsetX-P.x)*(Q.x-P.x)+(e.offsetY-P.y)*(Q.y-P.y))/
+            ((Q.x-P.x)**2+(Q.y-P.y)**2);
+    R.x=P.x+t*(Q.x-P.x);
+    R.y=P.y+t*(Q.y-P.y);
+}
+
+/* ================= START ================= */
+drawLineSim();
+drawTri();
+</script>
+
+</body>
+</html>
