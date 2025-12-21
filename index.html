@@ -1,0 +1,127 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>Mass Point Geometry Simulation</title>
+
+<style>
+    body {
+        font-family: Arial, sans-serif;
+        background: #f4f6f8;
+        text-align: center;
+        padding: 20px;
+    }
+
+    canvas {
+        background: white;
+        border: 2px solid #333;
+        margin-top: 20px;
+    }
+
+    .info {
+        margin-top: 20px;
+        font-size: 18px;
+    }
+
+    .info span {
+        font-weight: bold;
+        color: #2c3e50;
+    }
+</style>
+</head>
+
+<body>
+
+<h1>Mass Point Geometry Simulation</h1>
+<p>Drag point <b>D</b> along segment <b>BC</b></p>
+
+<canvas id="canvas" width="600" height="200"></canvas>
+
+<div class="info">
+    <p>BD : DC = <span id="ratio"></span></p>
+    <p>Mass at B = <span id="massB"></span></p>
+    <p>Mass at C = <span id="massC"></span></p>
+    <p>Mass at D = <span id="massD"></span></p>
+</div>
+
+<script>
+const canvas = document.getElementById("canvas");
+const ctx = canvas.getContext("2d");
+
+const B = { x: 100, y: 100 };
+const C = { x: 500, y: 100 };
+let D = { x: 300, y: 100 };
+
+let dragging = false;
+
+function draw() {
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+    // Line BC
+    ctx.beginPath();
+    ctx.moveTo(B.x, B.y);
+    ctx.lineTo(C.x, C.y);
+    ctx.strokeStyle = "black";
+    ctx.lineWidth = 3;
+    ctx.stroke();
+
+    // Points
+    drawPoint(B, "B");
+    drawPoint(C, "C");
+    drawPoint(D, "D", true);
+
+    updateMath();
+}
+
+function drawPoint(p, label, draggable=false) {
+    ctx.beginPath();
+    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = draggable ? "#e74c3c" : "#3498db";
+    ctx.fill();
+    ctx.fillStyle = "black";
+    ctx.fillText(label, p.x - 5, p.y - 15);
+}
+
+function updateMath() {
+    const BD = D.x - B.x;
+    const DC = C.x - D.x;
+
+    const gcd = (a,b) => b ? gcd(b, a % b) : a;
+    let g = gcd(Math.round(BD), Math.round(DC));
+
+    let ratioBD = Math.round(BD / g);
+    let ratioDC = Math.round(DC / g);
+
+    document.getElementById("ratio").textContent =
+        ratioBD + " : " + ratioDC;
+
+    // Masses are inverse of segment ratios
+    document.getElementById("massB").textContent = ratioDC;
+    document.getElementById("massC").textContent = ratioBD;
+    document.getElementById("massD").textContent = ratioBD + ratioDC;
+}
+
+canvas.addEventListener("mousedown", (e) => {
+    const rect = canvas.getBoundingClientRect();
+    const mouseX = e.clientX - rect.left;
+    if (Math.abs(mouseX - D.x) < 10) dragging = true;
+});
+
+canvas.addEventListener("mousemove", (e) => {
+    if (!dragging) return;
+    const rect = canvas.getBoundingClientRect();
+    let mouseX = e.clientX - rect.left;
+    if (mouseX > B.x + 10 && mouseX < C.x - 10) {
+        D.x = mouseX;
+        draw();
+    }
+});
+
+canvas.addEventListener("mouseup", () => dragging = false);
+canvas.addEventListener("mouseleave", () => dragging = false);
+
+draw();
+</script>
+
+</body>
+</html>
