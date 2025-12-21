@@ -2,7 +2,7 @@
 <html lang="en">
 <head>
 <meta charset="UTF-8">
-<title>Mass Point Geometry Simulation</title>
+<title>Mass Point Geometry</title>
 
 <style>
     body {
@@ -16,6 +16,21 @@
         background: white;
         border: 2px solid #333;
         margin-top: 20px;
+    }
+
+    button {
+        margin: 10px;
+        padding: 10px 20px;
+        font-size: 16px;
+        cursor: pointer;
+    }
+
+    .page {
+        display: none;
+    }
+
+    .page.active {
+        display: block;
     }
 
     .info {
@@ -33,94 +48,166 @@
 <body>
 
 <h1>Mass Point Geometry Simulation</h1>
-<p>Drag point <b>D</b> along segment <b>BC</b></p>
 
-<canvas id="canvas" width="600" height="200"></canvas>
+<button onclick="showPage('segment')">Segment</button>
+<button onclick="showPage('triangle')">Triangle</button>
 
-<div class="info">
-    <p>BD : DC = <span id="ratio"></span></p>
-    <p>Mass at B = <span id="massB"></span></p>
-    <p>Mass at C = <span id="massC"></span></p>
-    <p>Mass at D = <span id="massD"></span></p>
+<!-- ================= SEGMENT PAGE ================= -->
+<div id="segment" class="page active">
+    <p>Drag point <b>D</b> along segment <b>BC</b></p>
+    <canvas id="canvas1" width="600" height="200"></canvas>
+
+    <div class="info">
+        <p>BD : DC = <span id="ratio1"></span></p>
+        <p>Mass at B = <span id="massB"></span></p>
+        <p>Mass at C = <span id="massC"></span></p>
+        <p>Mass at D = <span id="massD"></span></p>
+    </div>
+</div>
+
+<!-- ================= TRIANGLE PAGE ================= -->
+<div id="triangle" class="page">
+    <p>Triangle Mass Points (Drag D on BC)</p>
+    <canvas id="canvas2" width="600" height="400"></canvas>
+
+    <div class="info">
+        <p>BD : DC = <span id="ratio2"></span></p>
+        <p>Mass at B = <span id="massTB"></span></p>
+        <p>Mass at C = <span id="massTC"></span></p>
+        <p>Mass at A = <span id="massTA"></span></p>
+    </div>
 </div>
 
 <script>
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+/* ================= PAGE SWITCH ================= */
+function showPage(id) {
+    document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
+    document.getElementById(id).classList.add("active");
+}
+
+/* ================= SEGMENT SIM ================= */
+const canvas1 = document.getElementById("canvas1");
+const ctx1 = canvas1.getContext("2d");
 
 const B = { x: 100, y: 100 };
 const C = { x: 500, y: 100 };
 let D = { x: 300, y: 100 };
+let dragging1 = false;
 
-let dragging = false;
+function drawSegment() {
+    ctx1.clearRect(0, 0, canvas1.width, canvas1.height);
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    ctx1.beginPath();
+    ctx1.moveTo(B.x, B.y);
+    ctx1.lineTo(C.x, C.y);
+    ctx1.lineWidth = 3;
+    ctx1.stroke();
 
-    // Line BC
-    ctx.beginPath();
-    ctx.moveTo(B.x, B.y);
-    ctx.lineTo(C.x, C.y);
-    ctx.strokeStyle = "black";
-    ctx.lineWidth = 3;
-    ctx.stroke();
+    drawPoint(ctx1, B, "B");
+    drawPoint(ctx1, C, "C");
+    drawPoint(ctx1, D, "D", true);
 
-    // Points
-    drawPoint(B, "B");
-    drawPoint(C, "C");
-    drawPoint(D, "D", true);
-
-    updateMath();
+    updateSegmentMath();
 }
 
-function drawPoint(p, label, draggable=false) {
+function updateSegmentMath() {
+    const BD = D.x - B.x;
+    const DC = C.x - D.x;
+    const g = gcd(BD, DC);
+
+    document.getElementById("ratio1").textContent = `${BD/g} : ${DC/g}`;
+    document.getElementById("massB").textContent = DC/g;
+    document.getElementById("massC").textContent = BD/g;
+    document.getElementById("massD").textContent = BD/g + DC/g;
+}
+
+/* ================= TRIANGLE SIM ================= */
+const canvas2 = document.getElementById("canvas2");
+const ctx2 = canvas2.getContext("2d");
+
+const A = { x: 300, y: 50 };
+const TB = { x: 150, y: 300 };
+const TC = { x: 450, y: 300 };
+let TD = { x: 300, y: 300 };
+let dragging2 = false;
+
+function drawTriangle() {
+    ctx2.clearRect(0, 0, canvas2.width, canvas2.height);
+
+    // Triangle
+    ctx2.beginPath();
+    ctx2.moveTo(A.x, A.y);
+    ctx2.lineTo(TB.x, TB.y);
+    ctx2.lineTo(TC.x, TC.y);
+    ctx2.closePath();
+    ctx2.stroke();
+
+    // Cevian AD
+    ctx2.beginPath();
+    ctx2.moveTo(A.x, A.y);
+    ctx2.lineTo(TD.x, TD.y);
+    ctx2.strokeStyle = "#e74c3c";
+    ctx2.stroke();
+
+    drawPoint(ctx2, A, "A");
+    drawPoint(ctx2, TB, "B");
+    drawPoint(ctx2, TC, "C");
+    drawPoint(ctx2, TD, "D", true);
+
+    updateTriangleMath();
+}
+
+function updateTriangleMath() {
+    const BD = TD.x - TB.x;
+    const DC = TC.x - TD.x;
+    const g = gcd(BD, DC);
+
+    document.getElementById("ratio2").textContent = `${BD/g} : ${DC/g}`;
+    document.getElementById("massTB").textContent = DC/g;
+    document.getElementById("massTC").textContent = BD/g;
+    document.getElementById("massTA").textContent = BD/g + DC/g;
+}
+
+/* ================= HELPERS ================= */
+function drawPoint(ctx, p, label, drag=false) {
     ctx.beginPath();
     ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-    ctx.fillStyle = draggable ? "#e74c3c" : "#3498db";
+    ctx.fillStyle = drag ? "#e74c3c" : "#3498db";
     ctx.fill();
     ctx.fillStyle = "black";
     ctx.fillText(label, p.x - 5, p.y - 15);
 }
 
-function updateMath() {
-    const BD = D.x - B.x;
-    const DC = C.x - D.x;
-
-    const gcd = (a,b) => b ? gcd(b, a % b) : a;
-    let g = gcd(Math.round(BD), Math.round(DC));
-
-    let ratioBD = Math.round(BD / g);
-    let ratioDC = Math.round(DC / g);
-
-    document.getElementById("ratio").textContent =
-        ratioBD + " : " + ratioDC;
-
-    // Masses are inverse of segment ratios
-    document.getElementById("massB").textContent = ratioDC;
-    document.getElementById("massC").textContent = ratioBD;
-    document.getElementById("massD").textContent = ratioBD + ratioDC;
+function gcd(a, b) {
+    return b ? gcd(b, a % b) : Math.abs(a);
 }
 
-canvas.addEventListener("mousedown", (e) => {
-    const rect = canvas.getBoundingClientRect();
-    const mouseX = e.clientX - rect.left;
-    if (Math.abs(mouseX - D.x) < 10) dragging = true;
+/* ================= EVENTS ================= */
+canvas1.addEventListener("mousedown", e => {
+    if (Math.abs(e.offsetX - D.x) < 10) dragging1 = true;
 });
-
-canvas.addEventListener("mousemove", (e) => {
-    if (!dragging) return;
-    const rect = canvas.getBoundingClientRect();
-    let mouseX = e.clientX - rect.left;
-    if (mouseX > B.x + 10 && mouseX < C.x - 10) {
-        D.x = mouseX;
-        draw();
+canvas1.addEventListener("mousemove", e => {
+    if (dragging1 && e.offsetX > B.x && e.offsetX < C.x) {
+        D.x = e.offsetX;
+        drawSegment();
     }
 });
+canvas1.addEventListener("mouseup", () => dragging1 = false);
 
-canvas.addEventListener("mouseup", () => dragging = false);
-canvas.addEventListener("mouseleave", () => dragging = false);
+canvas2.addEventListener("mousedown", e => {
+    if (Math.abs(e.offsetX - TD.x) < 10) dragging2 = true;
+});
+canvas2.addEventListener("mousemove", e => {
+    if (dragging2 && e.offsetX > TB.x && e.offsetX < TC.x) {
+        TD.x = e.offsetX;
+        drawTriangle();
+    }
+});
+canvas2.addEventListener("mouseup", () => dragging2 = false);
 
-draw();
+/* ================= START ================= */
+drawSegment();
+drawTriangle();
 </script>
 
 </body>
