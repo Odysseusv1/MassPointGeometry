@@ -27,7 +27,7 @@
 
     .page {
         display: none;
-        max-width: 800px;
+        max-width: 900px;
         margin: auto;
     }
 
@@ -45,7 +45,7 @@
         color: #2c3e50;
     }
 
-    p {
+    p, li {
         text-align: left;
         line-height: 1.6;
     }
@@ -56,26 +56,40 @@
 
 <h1>Mass Point Geometry</h1>
 
-<button onclick="showPage('sim')">Simulation</button>
+<button onclick="showPage('line')">Line</button>
+<button onclick="showPage('triangle')">Triangle</button>
 <button onclick="showPage('explain')">Explanation</button>
 
-<!-- ================= SIMULATION PAGE ================= -->
-<div id="sim" class="page active">
+<!-- ================= LINE SIMULATION ================= -->
+<div id="line" class="page active">
+<h2>Line (Segment) Mass Points</h2>
+<p>Drag point <b>D</b> along segment <b>BC</b>.</p>
 
+<canvas id="lineCanvas" width="600" height="200"></canvas>
+
+<div class="info">
+    <p>BD : DC = <span id="lineRatio"></span></p>
+    <p>Mass at B = <span id="lineMassB"></span></p>
+    <p>Mass at C = <span id="lineMassC"></span></p>
+    <p>Mass at D = <span id="lineMassD"></span></p>
+</div>
+</div>
+
+<!-- ================= TRIANGLE SIMULATION ================= -->
+<div id="triangle" class="page">
+<h2>Triangle with Multiple Cevians</h2>
 <p>Drag points <b>D</b>, <b>E</b>, and <b>F</b> along the sides.</p>
 
-<canvas id="canvas" width="600" height="420"></canvas>
+<canvas id="triCanvas" width="600" height="420"></canvas>
 
 <div class="info">
     <p>BD : DC = <span id="rBC"></span></p>
     <p>AE : EC = <span id="rAC"></span></p>
     <p>AF : FB = <span id="rAB"></span></p>
-
     <p>Mass A = <span id="mA"></span></p>
     <p>Mass B = <span id="mB"></span></p>
     <p>Mass C = <span id="mC"></span></p>
 </div>
-
 </div>
 
 <!-- ================= EXPLANATION PAGE ================= -->
@@ -83,85 +97,47 @@
 
 <h2>What Is Mass Point Geometry?</h2>
 <p>
-Mass point geometry is a technique used to solve geometry problems involving
-segments, ratios, and concurrency (when lines meet at one point).
-It works by assigning “masses” to points so that balance rules apply.
-</p>
-
-<p>
-Instead of using algebra or coordinate geometry, mass points turn geometry
-problems into simple ratio problems.
+Mass point geometry is a problem-solving technique used to find ratios in geometric
+figures. Instead of using algebra or coordinates, we assign “masses” to points so
+that everything balances.
 </p>
 
 <h2>The Law of the Lever</h2>
 <p>
-The key idea behind mass point geometry comes from physics.
-If a point lies on a segment, then the masses at the endpoints must balance.
-</p>
-
-<p>
+The foundation of mass points comes from physics.
 If a point D lies on segment BC, then:
 </p>
 
-<p style="text-align:center;">
-<b>Mass at B × BD = Mass at C × DC</b>
-</p>
+<p style="text-align:center;"><b>
+(Mass at B) × BD = (Mass at C) × DC
+</b></p>
 
 <p>
-This means the masses are inversely proportional to the segment lengths.
+This means the masses are inversely proportional to the lengths.
 If BD : DC = 2 : 3, then the mass at B is 3 and the mass at C is 2.
 </p>
 
-<h2>Using Mass Points in Triangles</h2>
-<p>
-In a triangle, mass points are especially useful when dealing with cevians
-(lines from a vertex to the opposite side).
-</p>
-
-<p>
-When multiple cevians meet at a point, mass points allow you to:
-</p>
-<ul style="text-align:left;">
-    <li>Find segment ratios</li>
-    <li>Show concurrency</li>
-    <li>Compute lengths without coordinates</li>
+<h2>Why Mass Points Are Useful</h2>
+<ul>
+    <li>Finding ratios quickly</li>
+    <li>Proving concurrency of cevians</li>
+    <li>Avoiding complicated algebra</li>
+    <li>Solving contest problems efficiently</li>
 </ul>
 
-<h2>AMC 8 2019 – Problem 24 (Mass Points Explanation)</h2>
+<h2>AMC 8 2019 – Problem 24 (Mass Points)</h2>
 <p>
-In this problem, several cevians divide the sides of a triangle into known ratios.
-The goal is to find another ratio created by the intersection of these cevians.
+This problem involves a triangle with cevians dividing the sides into known ratios.
+The goal is to find another ratio created by their intersection.
 </p>
 
-<p>
-The key idea is that all cevians intersect at a single point, so the triangle
-must be balanced.
-</p>
-
-<p><b>Step 1:</b> Assign masses to the vertices so that each given side ratio is satisfied.</p>
+<p><b>Step 1:</b> Assign masses to endpoints of each side so the given ratios are satisfied.</p>
+<p><b>Step 2:</b> When multiple ratios meet at a vertex, add the masses.</p>
+<p><b>Step 3:</b> Use the final masses to compute the unknown ratio.</p>
 
 <p>
-For example, if a point divides a side in a 1:2 ratio, assign masses 2 and 1 to
-the endpoints.
-</p>
-
-<p><b>Step 2:</b> When two different ratios give masses at the same vertex, add them together.</p>
-
-<p>
-This ensures the triangle stays balanced at every intersection.
-</p>
-
-<p><b>Step 3:</b> Use the final masses to compute the desired ratio.</p>
-
-<p>
-Once all vertex masses are known, the ratio of any segment created by the cevians
-is simply the inverse ratio of the endpoint masses.
-</p>
-
-<p>
-This avoids algebra entirely and turns a difficult-looking geometry problem
-into a short arithmetic calculation — which is why mass point geometry is
-so powerful on contests like the AMC 8.
+The entire problem reduces to simple arithmetic. This is why mass point geometry
+is such a powerful tool on AMC-style contests.
 </p>
 
 </div>
@@ -173,9 +149,47 @@ function showPage(id) {
     document.getElementById(id).classList.add("active");
 }
 
-/* ================= SIMULATION ================= */
-const canvas = document.getElementById("canvas");
-const ctx = canvas.getContext("2d");
+/* ================= LINE SIM ================= */
+const lc = document.getElementById("lineCanvas");
+const lctx = lc.getContext("2d");
+
+const LB = { x: 100, y: 100 };
+const LC = { x: 500, y: 100 };
+let LD = { x: 300, y: 100 };
+let dragLine = false;
+
+function drawLineSim() {
+    lctx.clearRect(0,0,lc.width,lc.height);
+
+    drawSeg(LB,LC);
+    drawDot(LB,"B");
+    drawDot(LC,"C");
+    drawDot(LD,"D",true);
+
+    const BD = LD.x - LB.x;
+    const DC = LC.x - LD.x;
+    const g = gcd(BD,DC);
+
+    document.getElementById("lineRatio").textContent = `${BD/g} : ${DC/g}`;
+    document.getElementById("lineMassB").textContent = DC/g;
+    document.getElementById("lineMassC").textContent = BD/g;
+    document.getElementById("lineMassD").textContent = BD/g + DC/g;
+}
+
+lc.addEventListener("mousedown", e=>{
+    if(Math.abs(e.offsetX-LD.x)<10) dragLine=true;
+});
+lc.addEventListener("mousemove", e=>{
+    if(dragLine){
+        LD.x = Math.max(LB.x,Math.min(LC.x,e.offsetX));
+        drawLineSim();
+    }
+});
+lc.addEventListener("mouseup", ()=>dragLine=false);
+
+/* ================= TRIANGLE SIM ================= */
+const tc = document.getElementById("triCanvas");
+const tctx = tc.getContext("2d");
 
 const A = { x: 300, y: 60 };
 const B = { x: 120, y: 340 };
@@ -184,102 +198,89 @@ const C = { x: 480, y: 340 };
 let D = { x: 300, y: 340 };
 let E = { x: 390, y: 200 };
 let F = { x: 210, y: 200 };
-
 let drag = null;
 
-function draw() {
-    ctx.clearRect(0, 0, canvas.width, canvas.height);
+function drawTri() {
+    tctx.clearRect(0,0,tc.width,tc.height);
 
-    drawLine(A, B);
-    drawLine(B, C);
-    drawLine(C, A);
+    drawSeg(A,B,tctx);
+    drawSeg(B,C,tctx);
+    drawSeg(C,A,tctx);
 
-    drawLine(A, D, "#e74c3c");
-    drawLine(B, E, "#27ae60");
-    drawLine(C, F, "#8e44ad");
+    drawSeg(A,D,tctx,"#e74c3c");
+    drawSeg(B,E,tctx,"#27ae60");
+    drawSeg(C,F,tctx,"#8e44ad");
 
-    drawPoint(A, "A");
-    drawPoint(B, "B");
-    drawPoint(C, "C");
-    drawPoint(D, "D", true);
-    drawPoint(E, "E", true);
-    drawPoint(F, "F", true);
+    drawDot(A,"A",false,tctx);
+    drawDot(B,"B",false,tctx);
+    drawDot(C,"C",false,tctx);
+    drawDot(D,"D",true,tctx);
+    drawDot(E,"E",true,tctx);
+    drawDot(F,"F",true,tctx);
 
-    updateMasses();
+    updateTriMasses();
 }
 
-function drawLine(p1, p2, color = "black") {
-    ctx.beginPath();
-    ctx.moveTo(p1.x, p1.y);
-    ctx.lineTo(p2.x, p2.y);
-    ctx.strokeStyle = color;
-    ctx.lineWidth = 2;
-    ctx.stroke();
-}
-
-function drawPoint(p, label, drag=false) {
-    ctx.beginPath();
-    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
-    ctx.fillStyle = drag ? "#e74c3c" : "#3498db";
-    ctx.fill();
-    ctx.fillStyle = "black";
-    ctx.fillText(label, p.x - 5, p.y - 15);
-}
-
-function updateMasses() {
+function updateTriMasses() {
     const BD = D.x - B.x;
     const DC = C.x - D.x;
-    const gBC = gcd(BD, DC);
+    const gBC = gcd(BD,DC);
 
-    const AE = dist(A, E);
-    const EC = dist(E, C);
-    const gAC = gcd(Math.round(AE), Math.round(EC));
+    const AE = dist(A,E);
+    const EC = dist(E,C);
+    const gAC = gcd(Math.round(AE),Math.round(EC));
 
-    const AF = dist(A, F);
-    const FB = dist(F, B);
-    const gAB = gcd(Math.round(AF), Math.round(FB));
+    const AF = dist(A,F);
+    const FB = dist(F,B);
+    const gAB = gcd(Math.round(AF),Math.round(FB));
 
-    document.getElementById("rBC").textContent = `${BD/gBC} : ${DC/gBC}`;
-    document.getElementById("rAC").textContent = `${AE/gAC} : ${EC/gAC}`;
-    document.getElementById("rAB").textContent = `${AF/gAB} : ${FB/gAB}`;
+    document.getElementById("rBC").textContent = `${BD/gBC}:${DC/gBC}`;
+    document.getElementById("rAC").textContent = `${AE/gAC}:${EC/gAC}`;
+    document.getElementById("rAB").textContent = `${AF/gAB}:${FB/gAB}`;
 
-    const mB = DC / gBC;
-    const mC = BD / gBC;
-
-    const mA1 = EC / gAC;
-    const mC2 = AE / gAC;
-
-    const mA2 = FB / gAB;
-    const mB2 = AF / gAB;
-
-    document.getElementById("mA").textContent = Math.round(mA1 + mA2);
-    document.getElementById("mB").textContent = Math.round(mB + mB2);
-    document.getElementById("mC").textContent = Math.round(mC + mC2);
+    document.getElementById("mA").textContent = Math.round(EC/gAC + FB/gAB);
+    document.getElementById("mB").textContent = Math.round(DC/gBC + AF/gAB);
+    document.getElementById("mC").textContent = Math.round(BD/gBC + AE/gAC);
 }
 
-function gcd(a,b){ return b ? gcd(b,a%b) : Math.abs(a); }
-function dist(p,q){ return Math.hypot(p.x-q.x,p.y-q.y); }
+/* ================= HELPERS ================= */
+function drawSeg(p,q,ctx=lctx,color="black"){
+    ctx.beginPath();
+    ctx.moveTo(p.x,p.y);
+    ctx.lineTo(q.x,q.y);
+    ctx.strokeStyle=color;
+    ctx.lineWidth=2;
+    ctx.stroke();
+}
+function drawDot(p,l,drag=false,ctx=lctx){
+    ctx.beginPath();
+    ctx.arc(p.x,p.y,8,0,Math.PI*2);
+    ctx.fillStyle=drag?"#e74c3c":"#3498db";
+    ctx.fill();
+    ctx.fillStyle="black";
+    ctx.fillText(l,p.x-5,p.y-15);
+}
+function gcd(a,b){return b?gcd(b,a%b):Math.abs(a);}
+function dist(p,q){return Math.hypot(p.x-q.x,p.y-q.y);}
 
-canvas.addEventListener("mousedown", e => {
-    if (near(e,D)) drag="D";
-    else if (near(e,E)) drag="E";
-    else if (near(e,F)) drag="F";
+/* ================= TRI DRAG ================= */
+tc.addEventListener("mousedown",e=>{
+    if(near(e,D)) drag="D";
+    else if(near(e,E)) drag="E";
+    else if(near(e,F)) drag="F";
 });
-
-canvas.addEventListener("mousemove", e => {
-    if (!drag) return;
-    if (drag==="D") D.x = clamp(e.offsetX,B.x,C.x);
-    if (drag==="E") project(A,C,E,e);
-    if (drag==="F") project(A,B,F,e);
-    draw();
+tc.addEventListener("mousemove",e=>{
+    if(!drag) return;
+    if(drag==="D") D.x=clamp(e.offsetX,B.x,C.x);
+    if(drag==="E") project(A,C,E,e);
+    if(drag==="F") project(A,B,F,e);
+    drawTri();
 });
+tc.addEventListener("mouseup",()=>drag=null);
+tc.addEventListener("mouseleave",()=>drag=null);
 
-canvas.addEventListener("mouseup", ()=>drag=null);
-canvas.addEventListener("mouseleave", ()=>drag=null);
-
-function near(e,p){ return Math.hypot(e.offsetX-p.x,e.offsetY-p.y)<10; }
-function clamp(v,min,max){ return Math.max(min,Math.min(max,v)); }
-
+function near(e,p){return Math.hypot(e.offsetX-p.x,e.offsetY-p.y)<10;}
+function clamp(v,a,b){return Math.max(a,Math.min(b,v));}
 function project(P,Q,R,e){
     const t=((e.offsetX-P.x)*(Q.x-P.x)+(e.offsetY-P.y)*(Q.y-P.y))/
             ((Q.x-P.x)**2+(Q.y-P.y)**2);
@@ -287,7 +288,9 @@ function project(P,Q,R,e){
     R.y=P.y+t*(Q.y-P.y);
 }
 
-draw();
+/* ================= START ================= */
+drawLineSim();
+drawTri();
 </script>
 
 </body>
