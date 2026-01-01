@@ -171,7 +171,7 @@ lc.addEventListener("mousemove", e => {
 
 lc.addEventListener("mouseup", () => dragD = false);
 
-/* -------- Triangle Demo -------- */
+// triangel demo
 const tc = document.getElementById("tc");
 const ctx = tc.getContext("2d");
 
@@ -186,7 +186,7 @@ function d(p, q) {
     return Math.hypot(p.x - q.x, p.y - q.y);
 }
 
-// Keep P inside triangle
+// keep P inside triangle
 function clamp(p) {
     const det =
         (B2.y - C2.y) * (A.x - C2.x) +
@@ -214,7 +214,7 @@ function clamp(p) {
     };
 }
 
-// Line intersection
+// line intersection
 function ix(U, V, X, Y) {
     const a1 = V.y - U.y;
     const b1 = U.x - V.x;
@@ -273,7 +273,7 @@ tc.addEventListener("mousemove", e => {
 tc.addEventListener("mouseup", () => dragP = false);
 tc.addEventListener("mouseleave", () => dragP = false);
 
-/* -------- Helpers -------- */
+// helpers
 function seg(p, q, ctx, col = "black") {
     ctx.beginPath();
     ctx.moveTo(p.x, p.y);
