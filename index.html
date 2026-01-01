@@ -11,29 +11,35 @@ body {
     text-align: center;
     padding: 20px;
 }
+
 button {
     padding: 10px 18px;
     margin: 6px;
     font-size: 16px;
 }
+
 canvas {
     background: white;
     border: 2px solid #333;
     margin-top: 20px;
 }
+
 .page {
     display: none;
     max-width: 900px;
     margin: auto;
 }
-.active {
+
+.page.active {
     display: block;
 }
+
 p, li {
     text-align: left;
     line-height: 1.6;
     font-size: 17px;
 }
+
 .info {
     margin-top: 20px;
     font-size: 17px;
@@ -44,12 +50,12 @@ p, li {
 <body>
 
 <h1>My Nueva Project: Mass Point Geometry</h1>
-<br>
-<br>
-<button onclick="showPage('about')">About</button>
-<button onclick="showPage('line')">Line Demo</button>
-<button onclick="showPage('triangle')">Triangle Demo</button>
-<button onclick="showPage('explain')">Explanation</button>
+<br><br>
+
+<button onclick="go('about')">About</button>
+<button onclick="go('line')">Line Demo</button>
+<button onclick="go('tri')">Triangle Demo</button>
+<button onclick="go('why')">Explanation</button>
 
 <div id="about" class="page active">
 <h2><b>Inspiration</b></h2>
@@ -67,29 +73,26 @@ p, li {
 <p>Mass point geometry is a powerful technique for solving problems involving ratios and areas in triangles. It allows for elegant solutions by assigning "masses" to vertices, which then determine the positions of points on segments and the relationships between areas.</p>
 <p>This process also taught me about coding and how to implement mathematical concepts in an interactive environment.</p>
 </div>
+
 <div id="line" class="page">
 <h2>Mass Points on a Line</h2>
 <p>Drag point <b>D</b> along segment <b>BC</b>.</p>
 
-<canvas id="lineCanvas" width="600" height="200"></canvas>
+<canvas id="lc" width="600" height="200"></canvas>
 
 <div class="info">
-<p><b>BD : DC</b> = <span id="lineRatio"></span></p>
-<p><b>Mass at B</b> = <span id="massB"></span></p>
-<p><b>Mass at C</b> = <span id="massC"></span></p>
-<p><b>Mass at D</b> = <span id="massD"></span></p>
+<p><b>BD : DC</b> = <span id="lr"></span></p>
+<p><b>Mass at B</b> = <span id="mB"></span></p>
+<p><b>Mass at C</b> = <span id="mC"></span></p>
+<p><b>Mass at D</b> = <span id="mD"></span></p>
 </div>
 </div>
 
-<div id="triangle" class="page">
-<h2>Triangle with True Concurrent Cevians</h2>
-<p>
-Drag point <b>P</b>.  
-It always stays <b>inside the triangle</b>, and every cevian
-passes through <b>P</b> and hits the opposite side.
-</p>
+<div id="tri" class="page">
+<h2>Triangle with Concurrent Cevians</h2>
+<p>Drag point <b>P</b>. It always stays inside the triangle.</p>
 
-<canvas id="triCanvas" width="600" height="420"></canvas>
+<canvas id="tc" width="600" height="420"></canvas>
 
 <div class="info">
 <p><b>BD : DC</b> = <span id="rBC"></span></p>
@@ -98,16 +101,17 @@ passes through <b>P</b> and hits the opposite side.
 </div>
 </div>
 
-<div id="explain" class="page">
+<div id="why" class="page">
 <h2>Why This Is Guaranteed Correct</h2>
 <h3>The Law of Lever</h3>
 <p>Mass point geometry is based on the <b>law of lever</b> from physics. If two masses are balanced on a lever (seesaw) around a fulcrum, then:</p>
-<p style="text-align: center; font-size: 18px;"><b>Mass₁ × Distance₁ = Mass₂ × Distance₂</b></p>
-<p>Equivalently, if point <b>D</b> divides segment <b>BC</b> such that <b>BD : DC = m_C : m_B</b>, then assigning mass <b>m_B</b> at B and mass <b>m_C</b> at C makes D the balance point. The mass at the fulcrum D is simply <b>m_B + m_C</b>.</p>
+<p style="text-align: center; font-size: 18px;"><b>Mass₁ × Distance₁ = Mass₂ × Distance₂</b> The distances are the distance from the mass to the fulcrum</p>
+<p>If point <b>D</b> divides segment <b>BC</b> such that <b>BD : DC = m_C : m_B</b>, then assigning mass <b>m_B</b> at B and mass <b>m_C</b> at C makes D the balance point. The mass at the fulcrum D is simply <b>m_B + m_C</b>.</p>
 
 <h3>Cevians and Concurrent Lines</h3>
 <p>A <b>cevian</b> is a line segment from a vertex of a triangle to a point on the opposite side. When you assign masses to the three vertices A, B, and C, each side finds its balance point (fulcrum), and the three cevians from vertices through these balance points all meet at a single point—called the <b>concurrent point</b>.</p>
 <p>This is guaranteed by <b>Ceva's Theorem</b>: if cevians AD, BE, and CF are concurrent at point P, then the product of the three ratios equals 1.</p>
+
 
 <h3>Why It Works</h3>
 <p>When you drag point P in the triangle demo, the interactive visualization assigns masses to A, B, and C such that:</p>
@@ -116,95 +120,102 @@ passes through <b>P</b> and hits the opposite side.
     <li>Point E on CA balances masses at C and A</li>
     <li>Point F on AB balances masses at A and B</li>
 </ul>
-<p>Because the masses are consistent across all three vertices, all three cevians pass through the same point P. No special calculations needed—the physics of the lever guarantees it!</p>
+<p>Because the masses are consistent across all three vertices, all three cevians pass through the same point P. No special calculations needed, the physics of the lever guarantees it.</p>
+
 </div>
 
 <script>
-function showPage(id) {
+/* -------- Page Switching -------- */
+function go(id) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.getElementById(id).classList.add("active");
 }
 
-const lc = document.getElementById("lineCanvas");
+/* -------- Line Demo -------- */
+const lc = document.getElementById("lc");
 const lctx = lc.getContext("2d");
 
-const LB = { x: 100, y: 100 };
-const LC = { x: 500, y: 100 };
-let LD = { x: 300, y: 100 };
-let dragLine = false;
+const B = { x: 100, y: 100 };
+const C = { x: 500, y: 100 };
+let D = { x: 300, y: 100 };
+
+let dragD = false;
 
 function drawLine() {
-    lctx.clearRect(0,0,lc.width,lc.height);
+    lctx.clearRect(0, 0, lc.width, lc.height);
 
-    drawSeg(LB,LC,lctx);
-    drawDot(LB,"B",lctx);
-    drawDot(LC,"C",lctx);
-    drawDot(LD,"D",lctx,true);
+    seg(B, C, lctx);
+    dot(B, "B", lctx);
+    dot(C, "C", lctx);
+    dot(D, "D", lctx, true);
 
-    const BD = LD.x - LB.x;
-    const DC = LC.x - LD.x;
-    const g = gcd(BD,DC);
+    const BD = D.x - B.x;
+    const DC = C.x - D.x;
+    const g = gcd(BD, DC);
 
-    document.getElementById("lineRatio").textContent = `${BD/g} : ${DC/g}`;
-    document.getElementById("massB").textContent = DC/g;
-    document.getElementById("massC").textContent = BD/g;
-    document.getElementById("massD").textContent = BD/g + DC/g;
+    document.getElementById("lr").textContent = `${BD/g} : ${DC/g}`;
+    document.getElementById("mB").textContent = DC/g;
+    document.getElementById("mC").textContent = BD/g;
+    document.getElementById("mD").textContent = (BD + DC) / g;
 }
 
-lc.addEventListener("mousedown",e=>{
-    if(Math.abs(e.offsetX-LD.x)<10) dragLine=true;
+lc.addEventListener("mousedown", e => {
+    if (Math.abs(e.offsetX - D.x) < 10) dragD = true;
 });
-lc.addEventListener("mousemove",e=>{
-    if(!dragLine) return;
-    LD.x=Math.max(LB.x,Math.min(LC.x,e.offsetX));
+
+lc.addEventListener("mousemove", e => {
+    if (!dragD) return;
+    D.x = Math.max(B.x, Math.min(C.x, e.offsetX));
     drawLine();
 });
-lc.addEventListener("mouseup",()=>dragLine=false);
 
-const tc = document.getElementById("triCanvas");
+lc.addEventListener("mouseup", () => dragD = false);
+
+/* -------- Triangle Demo -------- */
+const tc = document.getElementById("tc");
 const ctx = tc.getContext("2d");
 
 const A = { x: 300, y: 60 };
-const B = { x: 120, y: 340 };
-const C = { x: 480, y: 340 };
+const B2 = { x: 120, y: 340 };
+const C2 = { x: 480, y: 340 };
 
 let P = { x: 300, y: 220 };
-let draggingP = false;
+let dragP = false;
 
-function dist(p,q){ return Math.hypot(p.x-q.x,p.y-q.y); }
-
-/* Barycentric coordinates */
-function barycentric(P,A,B,C){
-    const det =
-        (B.y-C.y)*(A.x-C.x) +
-        (C.x-B.x)*(A.y-C.y);
-    const l1 =
-        ((B.y-C.y)*(P.x-C.x) +
-         (C.x-B.x)*(P.y-C.y)) / det;
-    const l2 =
-        ((C.y-A.y)*(P.x-C.x) +
-         (A.x-C.x)*(P.y-C.y)) / det;
-    const l3 = 1 - l1 - l2;
-    return {l1,l2,l3};
+function d(p, q) {
+    return Math.hypot(p.x - q.x, p.y - q.y);
 }
 
-// Clamp P to inside triangle ABC
-function clampToTriangle(P){
-    let {l1,l2,l3} = barycentric(P,A,B,C);
+// Keep P inside triangle
+function clamp(p) {
+    const det =
+        (B2.y - C2.y) * (A.x - C2.x) +
+        (C2.x - B2.x) * (A.y - C2.y);
 
-    l1 = Math.max(0,l1);
-    l2 = Math.max(0,l2);
-    l3 = Math.max(0,l3);
+    let l1 =
+        ((B2.y - C2.y) * (p.x - C2.x) +
+         (C2.x - B2.x) * (p.y - C2.y)) / det;
+
+    let l2 =
+        ((C2.y - A.y) * (p.x - C2.x) +
+         (A.x - C2.x) * (p.y - C2.y)) / det;
+
+    let l3 = 1 - l1 - l2;
+
+    l1 = Math.max(0, l1);
+    l2 = Math.max(0, l2);
+    l3 = Math.max(0, l3);
 
     const s = l1 + l2 + l3;
+
     return {
-        x:(l1*A.x + l2*B.x + l3*C.x)/s,
-        y:(l1*A.y + l2*B.y + l3*C.y)/s
+        x: (l1*A.x + l2*B2.x + l3*C2.x) / s,
+        y: (l1*A.y + l2*B2.y + l3*C2.y) / s
     };
 }
 
-// Line Intersection
-function intersect(U,V,X,Y){
+// Line intersection
+function ix(U, V, X, Y) {
     const a1 = V.y - U.y;
     const b1 = U.x - V.x;
     const c1 = a1*U.x + b1*U.y;
@@ -214,75 +225,80 @@ function intersect(U,V,X,Y){
     const c2 = a2*X.x + b2*X.y;
 
     const det = a1*b2 - a2*b1;
+
     return {
-        x:(b2*c1 - b1*c2)/det,
-        y:(a1*c2 - a2*c1)/det
+        x: (b2*c1 - b1*c2) / det,
+        y: (a1*c2 - a2*c1) / det
     };
 }
 
+function drawTri() {
+    ctx.clearRect(0, 0, tc.width, tc.height);
 
-function drawTriangle(){
-    ctx.clearRect(0,0,tc.width,tc.height);
+    const D2 = ix(A, P, B2, C2);
+    const E = ix(B2, P, C2, A);
+    const F = ix(C2, P, A, B2);
 
-    const D = intersect(A,P,B,C);
-    const E = intersect(B,P,C,A);
-    const F = intersect(C,P,A,B);
+    seg(A, B2, ctx);
+    seg(B2, C2, ctx);
+    seg(C2, A, ctx);
 
-    drawSeg(A,B,ctx);
-    drawSeg(B,C,ctx);
-    drawSeg(C,A,ctx);
+    seg(A, D2, ctx, "#e74c3c");
+    seg(B2, E, ctx, "#27ae60");
+    seg(C2, F, ctx, "#8e44ad");
 
-    drawSeg(A,D,ctx,"#e74c3c");
-    drawSeg(B,E,ctx,"#27ae60");
-    drawSeg(C,F,ctx,"#8e44ad");
-
-    drawDot(A,"A",ctx);
-    drawDot(B,"B",ctx);
-    drawDot(C,"C",ctx);
-    drawDot(P,"P",ctx,true);
+    dot(A, "A", ctx);
+    dot(B2, "B", ctx);
+    dot(C2, "C", ctx);
+    dot(P, "P", ctx, true);
 
     document.getElementById("rBC").textContent =
-        `${Math.round(dist(B,D))} : ${Math.round(dist(D,C))}`;
+        `${Math.round(d(B2, D2))} : ${Math.round(d(D2, C2))}`;
     document.getElementById("rCA").textContent =
-        `${Math.round(dist(C,E))} : ${Math.round(dist(E,A))}`;
+        `${Math.round(d(C2, E))} : ${Math.round(d(E, A))}`;
     document.getElementById("rAB").textContent =
-        `${Math.round(dist(A,F))} : ${Math.round(dist(F,B))}`;
+        `${Math.round(d(A, F))} : ${Math.round(d(F, B2))}`;
 }
 
-// Mouse
-tc.addEventListener("mousedown",e=>{
-    if(dist({x:e.offsetX,y:e.offsetY},P)<12) draggingP=true;
+tc.addEventListener("mousedown", e => {
+    if (d({ x: e.offsetX, y: e.offsetY }, P) < 12) dragP = true;
 });
-tc.addEventListener("mousemove",e=>{
-    if(!draggingP) return;
-    P = clampToTriangle({x:e.offsetX,y:e.offsetY});
-    drawTriangle();
-});
-tc.addEventListener("mouseup",()=>draggingP=false);
-tc.addEventListener("mouseleave",()=>draggingP=false);
 
-// Helpers
-function drawSeg(p,q,ctx,color="black"){
+tc.addEventListener("mousemove", e => {
+    if (!dragP) return;
+    P = clamp({ x: e.offsetX, y: e.offsetY });
+    drawTri();
+});
+
+tc.addEventListener("mouseup", () => dragP = false);
+tc.addEventListener("mouseleave", () => dragP = false);
+
+/* -------- Helpers -------- */
+function seg(p, q, ctx, col = "black") {
     ctx.beginPath();
-    ctx.moveTo(p.x,p.y);
-    ctx.lineTo(q.x,q.y);
-    ctx.strokeStyle=color;
-    ctx.lineWidth=2;
+    ctx.moveTo(p.x, p.y);
+    ctx.lineTo(q.x, q.y);
+    ctx.strokeStyle = col;
+    ctx.lineWidth = 2;
     ctx.stroke();
 }
-function drawDot(p,l,ctx,drag=false){
+
+function dot(p, t, ctx, drag = false) {
     ctx.beginPath();
-    ctx.arc(p.x,p.y,8,0,Math.PI*2);
-    ctx.fillStyle=drag?"#e74c3c":"#3498db";
+    ctx.arc(p.x, p.y, 8, 0, Math.PI * 2);
+    ctx.fillStyle = drag ? "#e74c3c" : "#3498db";
     ctx.fill();
-    ctx.fillStyle="black";
-    ctx.fillText(l,p.x-5,p.y-12);
+    ctx.fillStyle = "black";
+    ctx.fillText(t, p.x - 5, p.y - 12);
 }
-function gcd(a,b){ return b ? gcd(b,a%b) : Math.abs(a); }
 
-drawTriangle();
+function gcd(a, b) {
+    return b ? gcd(b, a % b) : Math.abs(a);
+}
+
+/* Initial draw */
 drawLine();
-
+drawTri();
 </script>
 
 </body>
