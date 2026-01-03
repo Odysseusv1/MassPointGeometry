@@ -150,13 +150,13 @@ p, li {
 <button onclick="go('tri')">Triangle Demo</button>
 
 <script>
-/* -------- Page Switching -------- */
+//switches the pagess
 function go(id) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
     document.getElementById(id).classList.add("active");
 }
 
-/* -------- Line Demo -------- */
+// line demo
 const lc = document.getElementById("lc");
 const lctx = lc.getContext("2d");
 
@@ -196,7 +196,7 @@ lc.addEventListener("mousemove", e => {
 
 lc.addEventListener("mouseup", () => dragD = false);
 
-/* -------- Triangle Demo -------- */
+// triangle doems
 const tc = document.getElementById("tc");
 const ctx = tc.getContext("2d");
 
@@ -220,14 +220,12 @@ function clamp(p) {
     let clamped = { ...p };
     
     // abLine A --> B2
+    // acLine A --> C2
+    // bcLine B2 --> C2
     const abSlope = (B2.y - A.y) / (B2.x - A.x);
     const abLine = (x) => A.y + abSlope * (x - A.x);
-    
-    // acLine A --> C2
     const acSlope = (C2.y - A.y) / (C2.x - A.x);
     const acLine = (x) => A.y + acSlope * (x - A.x);
-    
-    // bcLine B2 --> C2
     const bcLine = (x) => B2.y + bcSlope * (x - B2.x);
     
     if (clamped.y < abLine(clamped.x)) 
@@ -247,7 +245,7 @@ function ix(U, V, X, Y) {
     const dy2 = Y.y - X.y;
 
     const denom = dx1 * dy2 - dy1 * dx2;
-    if (denom === 0) return null; // parallel
+    if (denom === 0) return null; // parallel or same
 
     const t =
         ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / denom;
@@ -323,7 +321,7 @@ function gcd(a, b) {
     return b ? gcd(b, a % b) : Math.abs(a);
 }
 
-/* Initial draw */
+//drwa
 drawLine();
 drawTri();
 </script>
