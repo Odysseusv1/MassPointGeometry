@@ -75,6 +75,12 @@ p, li {
 <p>Mass point geometry is a powerful technique for solving problems involving ratios and areas in triangles. It allows for elegant solutions by assigning "masses" to vertices, which then determine the positions of points on segments and the relationships between areas.</p>
 <p>This process also taught me about coding and how to implement mathematical concepts in an interactive environment.</p>
 <p>Also, I orginally programmed a part of this website with AI and I did not understand what the AI did, so I made my own version using simpler and more understandable concepts.</p>
+<h2><b>Explanation of Code</b></h2>
+<ol>
+    <li><b>Line Demo:</b> First I used Canvas to create the line. Then I used event listeners to handle whether or not the mouse was down. If the mouse is down and it is dragging the point then the program would change x position according to the offset, which would make it move.</li>
+    <li><b>Triangle Demo:</b> The triangle is drawn by creating all the segments first. There are two important functions for the triangle demo. The function that clamps point P inside the triangle and the function to make sure the cevians are concurrent. The function that makes the cevians concurrent ultizes </li>
+    <li><b>:</b> </li>
+</ol>
 </div>
 
 <div id="sources" class="page">
@@ -235,23 +241,41 @@ function clamp(p) {
     return clamped;
 }
 
-// Line intersection
+// // Line intersection
+// function ix(U, V, X, Y) {
+//     const a1 = V.y - U.y;
+//     const b1 = U.x - V.x;
+//     const c1 = a1*U.x + b1*U.y;
+
+//     const a2 = Y.y - X.y;
+//     const b2 = X.x - Y.x;
+//     const c2 = a2*X.x + b2*X.y;
+
+//     const det = a1*b2 - a2*b1;
+
+//     return {
+//         x: (b2*c1 - b1*c2) / det,
+//         y: (a1*c2 - a2*c1) / det
+//     };
+// }
 function ix(U, V, X, Y) {
-    const a1 = V.y - U.y;
-    const b1 = U.x - V.x;
-    const c1 = a1*U.x + b1*U.y;
+    const dx1 = V.x - U.x;
+    const dy1 = V.y - U.y;
+    const dx2 = Y.x - X.x;
+    const dy2 = Y.y - X.y;
 
-    const a2 = Y.y - X.y;
-    const b2 = X.x - Y.x;
-    const c2 = a2*X.x + b2*X.y;
+    const denom = dx1 * dy2 - dy1 * dx2;
+    if (denom === 0) return null; // parallel
 
-    const det = a1*b2 - a2*b1;
+    const t =
+        ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / denom;
 
     return {
-        x: (b2*c1 - b1*c2) / det,
-        y: (a1*c2 - a2*c1) / det
+        x: U.x + t * dx1,
+        y: U.y + t * dy1
     };
 }
+
 
 function drawTri() {
     ctx.clearRect(0, 0, tc.width, tc.height);
