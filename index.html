@@ -238,17 +238,18 @@ function clamp(p) {
     return clamped;
 }
 
+//intersection 
 function ix(U, V, X, Y) {
     const dx1 = V.x - U.x;
     const dy1 = V.y - U.y;
     const dx2 = Y.x - X.x;
     const dy2 = Y.y - X.y;
 
-    const denom = dx1 * dy2 - dy1 * dx2;
-    if (denom === 0) return null; // parallel or same
+    const d = dx1 * dy2 - dy1 * dx2;
+    if (d === 0) return null; // parallel or same
 
     const t =
-        ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / denom;
+        ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / d;
 
     return {
         x: U.x + t * dx1,
