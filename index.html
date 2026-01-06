@@ -280,27 +280,29 @@ function drawTri() {
     ctx.clearRect(0, 0, tc.width, tc.height);
 
     // intersection points
-    const D2 = ix(A, P, B2, C2); // on BC
-    const E  = ix(B2, P, C2, A); // on CA
-    const F  = ix(C2, P, A, B2); // on AB
+    const D2 = ix(A, P, B2, C2);
+    const E  = ix(B2, P, C2, A);
+    const F  = ix(C2, P, A, B2);
 
-    // triangle
+    // draw triangle
     seg(A, B2, ctx);
     seg(B2, C2, ctx);
     seg(C2, A, ctx);
+
+    dot(A, "A", ctx);
+    dot(B2, "B", ctx);
+    dot(C2, "C", ctx);
+    dot(P, "P", ctx, true);
+
+    // if intersections fail, stop here (prevents drag crash)
+    if (!D2 || !E || !F) return;
 
     // cevians
     seg(A, D2, ctx, "#e74c3c");
     seg(B2, E, ctx, "#27ae60");
     seg(C2, F, ctx, "#8e44ad");
 
-    // points
-    dot(A, "A", ctx);
-    dot(B2, "B", ctx);
-    dot(C2, "C", ctx);
-    dot(P, "P", ctx, true);
-
-    // distances for ratios
+    // distances
     const BD = d(B2, D2);
     const DC = d(D2, C2);
 
@@ -310,7 +312,7 @@ function drawTri() {
     const AF = d(A, F);
     const FB = d(F, B2);
 
-    // display side ratios
+    // ratios
     document.getElementById("rBC").textContent =
         `${Math.round(BD)} : ${Math.round(DC)}`;
     document.getElementById("rCA").textContent =
@@ -318,27 +320,31 @@ function drawTri() {
     document.getElementById("rAB").textContent =
         `${Math.round(AF)} : ${Math.round(FB)}`;
 
-    // mass point logic (inverse ratios)
+    // masses (inverse ratios)
     let mA = CE;
     let mB = AF;
     let mC = BD;
 
-    // simplify masses
-    const g = gcd(gcd(Math.round(mA), Math.round(mB)), Math.round(mC));
+    const g = gcd(
+        gcd(Math.round(mA), Math.round(mB)),
+        Math.round(mC)
+    );
+
     mA = Math.round(mA / g);
     mB = Math.round(mB / g);
     mC = Math.round(mC / g);
 
-    // update mass display
+    // display masses
     document.getElementById("mA2").textContent = mA;
     document.getElementById("mB2").textContent = mB;
     document.getElementById("mC2").textContent = mC;
 
-    // optional canvas labels
+    // optional labels
     ctx.fillText(`m=${mA}`, A.x - 28, A.y - 20);
     ctx.fillText(`m=${mB}`, B2.x - 28, B2.y + 20);
     ctx.fillText(`m=${mC}`, C2.x + 8, C2.y + 20);
 }
+
 
 // helperss
 function seg(p, q, ctx, col = "black") {
