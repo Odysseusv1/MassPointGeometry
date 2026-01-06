@@ -117,6 +117,10 @@ p, li {
 <p><b>BD : DC</b> = <span id="rBC"></span></p>
 <p><b>CE : EA</b> = <span id="rCA"></span></p>
 <p><b>AF : FB</b> = <span id="rAB"></span></p>
+<p><b>Mass at A</b> = <span id="mA2"></span></p>
+<p><b>Mass at B</b> = <span id="mB2"></span></p>
+<p><b>Mass at C</b> = <span id="mC2"></span></p>
+
 </div>
 </div>
 
@@ -220,6 +224,11 @@ function d(p, q) {
     return Math.hypot(p.x - q.x, p.y - q.y);
 }
 
+function simplify3(a, b, c) {
+    const g = gcd(gcd(a, b), c);
+    return [a / g, b / g, c / g];
+}
+
 // Keep P inside triangle
 function clamp(p) {
     const bcSlope = (C2.y - B2.y) / (C2.x - B2.x);
@@ -270,43 +279,66 @@ function ix(U, V, X, Y) {
 function drawTri() {
     ctx.clearRect(0, 0, tc.width, tc.height);
 
-    const D2 = ix(A, P, B2, C2);
-    const E = ix(B2, P, C2, A);
-    const F = ix(C2, P, A, B2);
+    // intersection points
+    const D2 = ix(A, P, B2, C2); // on BC
+    const E  = ix(B2, P, C2, A); // on CA
+    const F  = ix(C2, P, A, B2); // on AB
 
+    // triangle
     seg(A, B2, ctx);
     seg(B2, C2, ctx);
     seg(C2, A, ctx);
 
+    // cevians
     seg(A, D2, ctx, "#e74c3c");
     seg(B2, E, ctx, "#27ae60");
     seg(C2, F, ctx, "#8e44ad");
 
+    // points
     dot(A, "A", ctx);
     dot(B2, "B", ctx);
     dot(C2, "C", ctx);
     dot(P, "P", ctx, true);
 
+    // distances for ratios
+    const BD = d(B2, D2);
+    const DC = d(D2, C2);
+
+    const CE = d(C2, E);
+    const EA = d(E, A);
+
+    const AF = d(A, F);
+    const FB = d(F, B2);
+
+    // display side ratios
     document.getElementById("rBC").textContent =
-        `${Math.round(d(B2, D2))} : ${Math.round(d(D2, C2))}`;
+        `${Math.round(BD)} : ${Math.round(DC)}`;
     document.getElementById("rCA").textContent =
-        `${Math.round(d(C2, E))} : ${Math.round(d(E, A))}`;
+        `${Math.round(CE)} : ${Math.round(EA)}`;
     document.getElementById("rAB").textContent =
-        `${Math.round(d(A, F))} : ${Math.round(d(F, B2))}`;
+        `${Math.round(AF)} : ${Math.round(FB)}`;
+
+    // mass point logic (inverse ratios)
+    let mA = CE;
+    let mB = AF;
+    let mC = BD;
+
+    // simplify masses
+    const g = gcd(gcd(Math.round(mA), Math.round(mB)), Math.round(mC));
+    mA = Math.round(mA / g);
+    mB = Math.round(mB / g);
+    mC = Math.round(mC / g);
+
+    // update mass display
+    document.getElementById("mA2").textContent = mA;
+    document.getElementById("mB2").textContent = mB;
+    document.getElementById("mC2").textContent = mC;
+
+    // optional canvas labels
+    ctx.fillText(`m=${mA}`, A.x - 28, A.y - 20);
+    ctx.fillText(`m=${mB}`, B2.x - 28, B2.y + 20);
+    ctx.fillText(`m=${mC}`, C2.x + 8, C2.y + 20);
 }
-
-tc.addEventListener("mousedown", e => {
-    if (d({ x: e.offsetX, y: e.offsetY }, P) < 12) dragP = true;
-});
-
-tc.addEventListener("mousemove", e => {
-    if (!dragP) return;
-    P = clamp({ x: e.offsetX, y: e.offsetY });
-    drawTri();
-});
-
-tc.addEventListener("mouseup", () => dragP = false);
-tc.addEventListener("mouseleave", () => dragP = false);
 
 // helperss
 function seg(p, q, ctx, col = "black") {
