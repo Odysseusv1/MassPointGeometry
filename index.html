@@ -150,6 +150,13 @@ p, li {
 <button onclick="go('tri')">Triangle Demo</button>
 
 <script>
+document.onkeydown = function(e) {
+  if (event.keyCode == 123) { return false; } // F12
+  if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; }
+  if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; }
+  // Add other combinations like Ctrl+Shift+J, etc.
+}
+
 //switches the pagess
 function go(id) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
