@@ -47,7 +47,8 @@ p, li {
 </style>
 </head>
 
-<body oncontextmenu="return false;">
+<body>
+
 <h1>My Nueva Project: Mass Point Geometry</h1>
 <br><br>
 
@@ -94,7 +95,6 @@ p, li {
 <div id="line" class="page">
 <h2>Mass Points on a Line</h2>
 <p>Drag point <b>D</b> along segment <b>BC</b>.</p>
-<p>Scroll down for the ratios between the sides and masses on the points</p>
 
 <canvas id="lc" width="600" height="200"></canvas>
 
@@ -109,32 +109,21 @@ p, li {
 <div id="tri" class="page">
 <h2>Triangle with Concurrent Cevians</h2>
 <p>Drag point <b>P</b><br> <b>Disclosure:</b> Originally I used AI to write the part that ensures point P always stays inside the triangle. But I decided to rewrite it myself. As a result of this the function is much worse. The AI used barycentric coordinates which is an advanced technique to keep <b>P</b> in the triangle, but currently I use the equations of the lines to keep it within bounds.<b> So if point P escapes the triangle drag it back inside</b></p>
-<p>Scroll down for the ratios between the sides</p>
 
 <canvas id="tc" width="600" height="420"></canvas>
 
 <div class="info">
-<!-- <p><b>BD : DC</b> = <span id="rBC"></span></p>
+<p><b>BD : DC</b> = <span id="rBC"></span></p>
 <p><b>CE : EA</b> = <span id="rCA"></span></p>
 <p><b>AF : FB</b> = <span id="rAB"></span></p>
 <p><b>Mass at A</b> = <span id="mA"></span></p>
-<p><b>Mass at B</b> = <span id="mB"></span></p>
-<p><b>Mass at C</b> = <span id="mC"></span></p> -->
-
-<p><b>BD : DC</b> = <span id="rBC"></span> → <b>B</b> = <span id="mB"></span>, <b>C</b> = <span id="mC"></span></p>
-<p><b>CE : EA</b> = <span id="rCA"></span> → <b>C</b> = <span id="mC"></span>, <b>A</b> = <span id="mA"></span></p>
-<p><b>AF : FB</b> = <span id="rAB"></span> → <b>A</b> = <span id="mA"></span>, <b>B</b> = <span id="mB"></span></p>
-
-<p><b>Mass at A</b> = <span id="mA"></span></p>
-<p><b>Mass at B</b> = <span id="mB"></span></p>
-<p><b>Mass at C</b> = <span id="mC"></span></p>
-<p><b>Mass at P</b> = <span id="mP"></span></p>
-
+<p><b>Mass at B</b> = <span id="mB_tri"></span></p>
+<p><b>Mass at C</b> = <span id="mC_tri"></span></p>
 </div>
 </div>
 
 <div id="why" class="page">
-<h2>Why this Iis guaranteed to be correct</h2>
+<h2>Why This Is Guaranteed Correct</h2>
 <h3>The Law of Lever</h3>
 <p>Mass point geometry is based on the <b>law of lever</b> from physics. If two masses are balanced on a lever around a fulcrum, then:</p>
 <img src = "lawoflever.gif" alt="Law of Lever" width="500" height="450">
@@ -165,13 +154,6 @@ p, li {
 <button onclick="go('tri')">Triangle Demo</button>
 
 <script>
-document.onkeydown = function(e) {
-  if (event.keyCode == 123) { return false; } // F12
-  if (e.ctrlKey && e.shiftKey && e.keyCode == 'I'.charCodeAt(0)) { return false; }
-  if (e.ctrlKey && e.keyCode == 'U'.charCodeAt(0)) { return false; }
-  // Add other combinations like Ctrl+Shift+J, etc.
-}
-
 //switches the pagess
 function go(id) {
     document.querySelectorAll(".page").forEach(p => p.classList.remove("active"));
@@ -200,9 +182,9 @@ function drawLine() {
     const DC = C.x - D.x;
     const g = gcd(BD, DC);
 
-    document.getElementById("lr").textContent = `${BD / g} : ${DC / g}`;
-    document.getElementById("mB").textContent = DC / g;
-    document.getElementById("mC").textContent = BD / g;
+    document.getElementById("lr").textContent = `${BD/g} : ${DC/g}`;
+    document.getElementById("mB").textContent = DC/g;
+    document.getElementById("mC").textContent = BD/g;
     document.getElementById("mD").textContent = (BD + DC) / g;
 }
 
@@ -236,18 +218,27 @@ function d(p, q) {
 // Keep P inside triangle
 function clamp(p) {
     const bcSlope = (C2.y - B2.y) / (C2.x - B2.x);
+    const lineY = B2.y + bcSlope * (p.x - B2.x);
+    
+    // clamp to triangle cuz of line equations
     let clamped = { ...p };
-
+    
+    // abLine A --> B2
+    // acLine A --> C2
+    // bcLine B2 --> C2
     const abSlope = (B2.y - A.y) / (B2.x - A.x);
-    const abLine = x => A.y + abSlope * (x - A.x);
+    const abLine = (x) => A.y + abSlope * (x - A.x);
     const acSlope = (C2.y - A.y) / (C2.x - A.x);
-    const acLine = x => A.y + acSlope * (x - A.x);
-    const bcLine = x => B2.y + bcSlope * (x - B2.x);
-
-    if (clamped.y < abLine(clamped.x)) clamped.y = abLine(clamped.x);
-    if (clamped.y < acLine(clamped.x)) clamped.y = acLine(clamped.x);
-    if (clamped.y > bcLine(clamped.x)) clamped.y = bcLine(clamped.x);
-
+    const acLine = (x) => A.y + acSlope * (x - A.x);
+    const bcLine = (x) => B2.y + bcSlope * (x - B2.x);
+    
+    if (clamped.y < abLine(clamped.x)) 
+        clamped.y = abLine(clamped.x);
+    if (clamped.y < acLine(clamped.x)) 
+        clamped.y = acLine(clamped.x);
+    if (clamped.y > bcLine(clamped.x)) 
+        clamped.y = bcLine(clamped.x);
+    
     return clamped;
 }
 
@@ -259,15 +250,17 @@ function ix(U, V, X, Y) {
     const dy2 = Y.y - X.y;
 
     const d = dx1 * dy2 - dy1 * dx2;
-    if (d === 0) return null;
+    if (d === 0) return null; // parallel or same
 
-    const t = ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / d;
+    const t =
+        ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / d;
 
     return {
         x: U.x + t * dx1,
         y: U.y + t * dy1
     };
 }
+
 
 function drawTri() {
     ctx.clearRect(0, 0, tc.width, tc.height);
@@ -289,31 +282,28 @@ function drawTri() {
     dot(C2, "C", ctx);
     dot(P, "P", ctx, true);
 
-    const BD = Math.round(d(B2, D2));
-    const DC = Math.round(d(D2, C2));
-    const gBC = gcd(BD, DC);
+    const bd = d(B2, D2);
+    const dc = d(D2, C2);
+    const ce = d(C2, E);
+    const ea = d(E, A);
+    const af = d(A, F);
+    const fb = d(F, B2);
 
-    const CE = Math.round(d(C2, E));
-    const EA = Math.round(d(E, A));
-    const gCA = gcd(CE, EA);
+    document.getElementById("rBC").textContent = `${Math.round(bd)} : ${Math.round(dc)}`;
+    document.getElementById("rCA").textContent = `${Math.round(ce)} : ${Math.round(ea)}`;
+    document.getElementById("rAB").textContent = `${Math.round(af)} : ${Math.round(fb)}`;
 
-    const AF = Math.round(d(A, F));
-    const FB = Math.round(d(F, B2));
-    const gAB = gcd(AF, FB);
+    // Compute masses based on ratios, scaled up by 10 for larger display
+    const scale = 10;
+    const g_bc = gcd(Math.round(bd), Math.round(dc));
+    let mB = (dc / g_bc) * scale;
+    let mC = (bd / g_bc) * scale;
+    let mA = (ce / ea) * mC;
 
-    document.getElementById("rBC").textContent = `${BD / gBC} : ${DC / gBC}`;
-    document.getElementById("rCA").textContent = `${CE / gCA} : ${EA / gCA}`;
-    document.getElementById("rAB").textContent = `${AF / gAB} : ${FB / gAB}`;
-
-    const mA = (EA / gCA) * (AF / gAB);
-    const mB = (DC / gBC) * (FB / gAB);
-    const mC = (BD / gBC) * (CE / gCA);
-    const gFinal = gcd(gcd(mA, mB), mC);
-
-    document.getElementById("mA").textContent = mA / gFinal;
-    document.getElementById("mB").textContent = mB / gFinal;
-    document.getElementById("mC").textContent = mC / gFinal;
-    document.getElementById("mP").textContent = (mA + mB + mC) / gFinal;
+    // Round to 2 decimal places for display
+    document.getElementById("mA").textContent = mA.toFixed(2);
+    document.getElementById("mB_tri").textContent = mB.toFixed(2);
+    document.getElementById("mC_tri").textContent = mC.toFixed(2);
 }
 
 tc.addEventListener("mousedown", e => {
