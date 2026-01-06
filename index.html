@@ -191,9 +191,9 @@ function drawLine() {
     const DC = C.x - D.x;
     const g = gcd(BD, DC);
 
-    document.getElementById("lr").textContent = `${BD/g} : ${DC/g}`;
-    document.getElementById("mB").textContent = DC/g;
-    document.getElementById("mC").textContent = BD/g;
+    document.getElementById("lr").textContent = `${BD / g} : ${DC / g}`;
+    document.getElementById("mB").textContent = DC / g;
+    document.getElementById("mC").textContent = BD / g;
     document.getElementById("mD").textContent = (BD + DC) / g;
 }
 
@@ -224,35 +224,21 @@ function d(p, q) {
     return Math.hypot(p.x - q.x, p.y - q.y);
 }
 
-function simplify3(a, b, c) {
-    const g = gcd(gcd(a, b), c);
-    return [a / g, b / g, c / g];
-}
-
 // Keep P inside triangle
 function clamp(p) {
     const bcSlope = (C2.y - B2.y) / (C2.x - B2.x);
-    const lineY = B2.y + bcSlope * (p.x - B2.x);
-    
-    // clamp to triangle cuz of line equations
     let clamped = { ...p };
-    
-    // abLine A --> B2
-    // acLine A --> C2
-    // bcLine B2 --> C2
+
     const abSlope = (B2.y - A.y) / (B2.x - A.x);
-    const abLine = (x) => A.y + abSlope * (x - A.x);
+    const abLine = x => A.y + abSlope * (x - A.x);
     const acSlope = (C2.y - A.y) / (C2.x - A.x);
-    const acLine = (x) => A.y + acSlope * (x - A.x);
-    const bcLine = (x) => B2.y + bcSlope * (x - B2.x);
-    
-    if (clamped.y < abLine(clamped.x)) 
-        clamped.y = abLine(clamped.x);
-    if (clamped.y < acLine(clamped.x)) 
-        clamped.y = acLine(clamped.x);
-    if (clamped.y > bcLine(clamped.x)) 
-        clamped.y = bcLine(clamped.x);
-    
+    const acLine = x => A.y + acSlope * (x - A.x);
+    const bcLine = x => B2.y + bcSlope * (x - B2.x);
+
+    if (clamped.y < abLine(clamped.x)) clamped.y = abLine(clamped.x);
+    if (clamped.y < acLine(clamped.x)) clamped.y = acLine(clamped.x);
+    if (clamped.y > bcLine(clamped.x)) clamped.y = bcLine(clamped.x);
+
     return clamped;
 }
 
@@ -264,10 +250,9 @@ function ix(U, V, X, Y) {
     const dy2 = Y.y - X.y;
 
     const d = dx1 * dy2 - dy1 * dx2;
-    if (d === 0) return null; // parallel or same
+    if (d === 0) return null;
 
-    const t =
-        ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / d;
+    const t = ((X.x - U.x) * dy2 - (X.y - U.y) * dx2) / d;
 
     return {
         x: U.x + t * dx1,
@@ -275,78 +260,65 @@ function ix(U, V, X, Y) {
     };
 }
 
-
 function drawTri() {
     ctx.clearRect(0, 0, tc.width, tc.height);
 
     const D2 = ix(A, P, B2, C2);
-    const E  = ix(B2, P, C2, A);
-    const F  = ix(C2, P, A, B2);
+    const E = ix(B2, P, C2, A);
+    const F = ix(C2, P, A, B2);
 
-    // draw triangle
     seg(A, B2, ctx);
     seg(B2, C2, ctx);
     seg(C2, A, ctx);
+
+    seg(A, D2, ctx, "#e74c3c");
+    seg(B2, E, ctx, "#27ae60");
+    seg(C2, F, ctx, "#8e44ad");
 
     dot(A, "A", ctx);
     dot(B2, "B", ctx);
     dot(C2, "C", ctx);
     dot(P, "P", ctx, true);
 
-    if (!D2 || !E || !F) return;
+    const BD = Math.round(d(B2, D2));
+    const DC = Math.round(d(D2, C2));
+    const gBC = gcd(BD, DC);
 
-    // cevians
-    seg(A, D2, ctx, "#e74c3c");
-    seg(B2, E, ctx, "#27ae60");
-    seg(C2, F, ctx, "#8e44ad");
+    const CE = Math.round(d(C2, E));
+    const EA = Math.round(d(E, A));
+    const gCA = gcd(CE, EA);
 
-    // distances
-    const BD = d(B2, D2);
-    const DC = d(D2, C2);
-    const CE = d(C2, E);
-    const EA = d(E, A);
-    const AF = d(A, F);
-    const FB = d(F, B2);
+    const AF = Math.round(d(A, F));
+    const FB = Math.round(d(F, B2));
+    const gAB = gcd(AF, FB);
 
-    // ratios
-    document.getElementById("rBC").textContent =
-        `${Math.round(BD)} : ${Math.round(DC)}`;
-    document.getElementById("rCA").textContent =
-        `${Math.round(CE)} : ${Math.round(EA)}`;
-    document.getElementById("rAB").textContent =
-        `${Math.round(AF)} : ${Math.round(FB)}`;
+    document.getElementById("rBC").textContent = `${BD / gBC} : ${DC / gBC}`;
+    document.getElementById("rCA").textContent = `${CE / gCA} : ${EA / gCA}`;
+    document.getElementById("rAB").textContent = `${AF / gAB} : ${FB / gAB}`;
 
-    // masses (inverse ratios)
-    let mA = CE;
-    let mB = AF;
-    let mC = BD;
+    const mA = (EA / gCA) * (AF / gAB);
+    const mB = (DC / gBC) * (FB / gAB);
+    const mC = (BD / gBC) * (CE / gCA);
+    const gFinal = gcd(gcd(mA, mB), mC);
 
-    const g = gcd(
-        gcd(Math.round(mA), Math.round(mB)),
-        Math.round(mC)
-    );
-
-    mA = Math.round(mA / g);
-    mB = Math.round(mB / g);
-    mC = Math.round(mC / g);
-
-    // SAFE DOM updates (won't crash)
-    const aEl = document.getElementById("mA2");
-    const bEl = document.getElementById("mB2");
-    const cEl = document.getElementById("mC2");
-
-    if (aEl && bEl && cEl) {
-        aEl.textContent = mA;
-        bEl.textContent = mB;
-        cEl.textContent = mC;
-    }
-
-    // canvas labels (safe)
-    ctx.fillText(`m=${mA}`, A.x - 28, A.y - 20);
-    ctx.fillText(`m=${mB}`, B2.x - 28, B2.y + 20);
-    ctx.fillText(`m=${mC}`, C2.x + 8, C2.y + 20);
+    document.getElementById("mA").textContent = mA / gFinal;
+    document.getElementById("mB").textContent = mB / gFinal;
+    document.getElementById("mC").textContent = mC / gFinal;
+    document.getElementById("mP").textContent = (mA + mB + mC) / gFinal;
 }
 
+tc.addEventListener("mousedown", e => {
+    if (d({ x: e.offsetX, y: e.offsetY }, P) < 12) dragP = true;
+});
+
+tc.addEventListener("mousemove", e => {
+    if (!dragP) return;
+    P = clamp({ x: e.offsetX, y: e.offsetY });
+    drawTri();
+});
+
+tc.addEventListener("mouseup", () => dragP = false);
+tc.addEventListener("mouseleave", () => dragP = false);
 
 // helperss
 function seg(p, q, ctx, col = "black") {
