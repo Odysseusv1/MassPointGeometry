@@ -279,7 +279,6 @@ function ix(U, V, X, Y) {
 function drawTri() {
     ctx.clearRect(0, 0, tc.width, tc.height);
 
-    // intersection points
     const D2 = ix(A, P, B2, C2);
     const E  = ix(B2, P, C2, A);
     const F  = ix(C2, P, A, B2);
@@ -294,7 +293,6 @@ function drawTri() {
     dot(C2, "C", ctx);
     dot(P, "P", ctx, true);
 
-    // if intersections fail, stop here (prevents drag crash)
     if (!D2 || !E || !F) return;
 
     // cevians
@@ -305,10 +303,8 @@ function drawTri() {
     // distances
     const BD = d(B2, D2);
     const DC = d(D2, C2);
-
     const CE = d(C2, E);
     const EA = d(E, A);
-
     const AF = d(A, F);
     const FB = d(F, B2);
 
@@ -334,12 +330,18 @@ function drawTri() {
     mB = Math.round(mB / g);
     mC = Math.round(mC / g);
 
-    // display masses
-    document.getElementById("mA2").textContent = mA;
-    document.getElementById("mB2").textContent = mB;
-    document.getElementById("mC2").textContent = mC;
+    // SAFE DOM updates (won't crash)
+    const aEl = document.getElementById("mA2");
+    const bEl = document.getElementById("mB2");
+    const cEl = document.getElementById("mC2");
 
-    // optional labels
+    if (aEl && bEl && cEl) {
+        aEl.textContent = mA;
+        bEl.textContent = mB;
+        cEl.textContent = mC;
+    }
+
+    // canvas labels (safe)
     ctx.fillText(`m=${mA}`, A.x - 28, A.y - 20);
     ctx.fillText(`m=${mB}`, B2.x - 28, B2.y + 20);
     ctx.fillText(`m=${mC}`, C2.x + 8, C2.y + 20);
