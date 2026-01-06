@@ -78,7 +78,7 @@ p, li {
 <h2><b>Explanation of Code</b></h2>
 <ol>
     <li><b>Line Demo:</b> First I used Canvas to create the line. Then I used event listeners to handle whether or not the mouse was down. If the mouse is down and it is dragging the point then the program would change x position according to the offset, which would make it move.</li>
-    <li><b>Triangle Demo:</b> The triangle is drawn by creating all the segments first. There are two important functions for the triangle demo. The function that clamps point P inside the triangle and the function to make sure the cevians are concurrent. The function that makes the cevians concurrent does the following: first it finds the equations of the lines, but then you need to know the intersection point. After some research I found that you can use a determinant to do this. This was extremely mathematical heavily and I relied on online resources. The second function of the triangle demo is making sure point P stays in the triangle. Originally I had AI program this, but it used very advanced topics. So I made my own version which uses the equations of the lines and makes a systems of equations. </li>
+    <li><b>Triangle Demo:</b> The triangle is drawn by creating all the segments first. There are two important functions for the triangle demo. The function that clamps point P inside the triangle and the function to make sure the cevians are concurrent. The function that makes the cevians concurrent does the following: first it finds the equations of the lines, but then you need to know the intersection point. After some research I found that you can use a determinant to do this. This was extremely mathematical heavily and I relied on online resources. The second function of the triangle demo is making sure point P stays in the triangle. Originally I had AI program this, but it used very advanced topics. So I made my own version which uses the equations of the lines to keep it within bounds. </li>
 </ol>
 </div>
 
@@ -289,21 +289,14 @@ function drawTri() {
     const af = d(A, F);
     const fb = d(F, B2);
 
-    document.getElementById("rBC").textContent = `${Math.round(bd)} : ${Math.round(dc)}`;
-    document.getElementById("rCA").textContent = `${Math.round(ce)} : ${Math.round(ea)}`;
-    document.getElementById("rAB").textContent = `${Math.round(af)} : ${Math.round(fb)}`;
+    document.getElementById("rBC").textContent = `${Math.round(dc)} : ${Math.round(bd)}`;
+    document.getElementById("rCA").textContent = `${Math.round(ea)} : ${Math.round(ce)}`;
+    document.getElementById("rAB").textContent = `${Math.round(fb)} : ${Math.round(af)}`;
 
-    // Compute masses based on ratios, scaled up by 10 for larger display
-    const scale = 10;
-    const g_bc = gcd(Math.round(bd), Math.round(dc));
-    let mB = (dc / g_bc) * scale;
-    let mC = (bd / g_bc) * scale;
-    let mA = (ce / ea) * mC;
-
-    // Round to 2 decimal places for display
-    document.getElementById("mA").textContent = mA.toFixed(2);
-    document.getElementById("mB_tri").textContent = mB.toFixed(2);
-    document.getElementById("mC_tri").textContent = mC.toFixed(2);
+    // Masses set to the inverted ratio lengths
+    document.getElementById("mA").textContent = Math.round(ea);
+    document.getElementById("mB_tri").textContent = Math.round(dc);
+    document.getElementById("mC_tri").textContent = Math.round(bd);
 }
 
 tc.addEventListener("mousedown", e => {
@@ -317,6 +310,7 @@ tc.addEventListener("mousemove", e => {
 });
 
 tc.addEventListener("mouseup", () => dragP = false);
+tc.addEventListener("mouseleave", () => dragP = false);
 tc.addEventListener("mouseleave", () => dragP = false);
 
 // helperss
